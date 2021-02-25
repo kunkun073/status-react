@@ -2116,7 +2116,7 @@
    (contact.db/query-chat-contacts chat contacts query-fn)))
 
 (re-frame/reg-sub
- ::profile-pictures-show-to
+ :multiaccount/profile-pictures-show-to
  :<- [:multiaccount]
  (fn [multiaccount]
    (get multiaccount :profile-pictures-show-to)))

@@ -448,6 +448,9 @@
            {:name      :appearance
             :options   {:topBar {:title {:text (i18n/label :t/appearance)}}}
             :component appearance/appearance}
+           {:name      :privacy-and-security-profile-pic-show-to
+            :options   {:topbar {:title {:text (i18n/label :t/show-profile-pictures-to)}}}
+            :component privacy-and-security/profile-pic-show-to}
            {:name      :appearance-profile-pic
             :options   {:topBar {:title {:text (i18n/label :t/show-profile-pictures)}}}
             :component appearance/profile-pic}
