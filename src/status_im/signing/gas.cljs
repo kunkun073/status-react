@@ -62,17 +62,42 @@
         (assoc key data)
         edit-max-fee)))
 
-(def minimum-priority-fee
-  (money/wei-> :gwei (money/->wei :gwei 1)))
+(def minimum-priority-fee-gwei
+  (money/bignumber 2))
+
+(defn get-minimum-priority-fee [suggested-tip]
+  (let [suggested-tip-gwei (->> suggested-tip
+                                money/bignumber
+                                money/wei->gwei)]
+    (if (money/greater-than minimum-priority-fee-gwei suggested-tip-gwei)
+      (money/div suggested-tip-gwei 2)
+      minimum-priority-fee-gwei)))
+
+(defn get-suggested-tip [latest-priority-fee]
+  (money/div (money/bignumber latest-priority-fee) 2))
+
+(defn get-minimum-priority-fee-gwei [latest-priority-fee]
+  (let [latest-priority-fee-bn (money/bignumber latest-priority-fee)
+        suggested-tip-gwei (money/wei->gwei (get-suggested-tip latest-priority-fee-bn))]
+    (if (money/greater-than minimum-priority-fee-gwei suggested-tip-gwei)
+      (money/div suggested-tip-gwei 2)
+      minimum-priority-fee-gwei)))
+
+(defn get-suggestions-range [latest-priority-fee]
+  (let [current-minimum-fee (get-minimum-priority-fee-gwei latest-priority-fee)]
+    [(if (money/greater-than minimum-priority-fee-gwei current-minimum-fee)
+       current-minimum-fee
+       minimum-priority-fee-gwei)
+     (money/wei->gwei (money/bignumber latest-priority-fee))]))
 
 (def average-priority-fee
-  (money/wei-> :gwei (money/->wei :gwei 1.5)))
+  (money/wei->gwei (money/->wei :gwei 1.5)))
 
 (defn validate-max-fee [db]
   (let [{:keys [maxFeePerGas maxPriorityFeePerGas]} (get db :signing/edit-fee)
-        latest-base-fee (money/wei-> :gwei
-                                     (money/bignumber
-                                      (get db :wallet/latest-base-fee)))
+        latest-base-fee (money/wei->gwei
+                         (money/bignumber
+                          (get db :wallet/latest-base-fee)))
         fee-error (cond
                     (or (:error maxFeePerGas)
                         (:error maxPriorityFeePerGas))
@@ -94,19 +119,22 @@
 
 (defn validate-max-priority-fee [db]
   (let [{:keys [maxPriorityFeePerGas]} (get db :signing/edit-fee)
+        latest-priority-fee (get db :wallet/latest-priority-fee)
         fee-error (cond
                     (:error maxPriorityFeePerGas)
                     nil
 
-                    (money/greater-than minimum-priority-fee
+                    (money/greater-than (get-minimum-priority-fee
+                                         (money/div
+                                          (money/wei->gwei (money/bignumber latest-priority-fee)) 2))
                                         (:value-number maxPriorityFeePerGas))
                     {:label (i18n/label :t/low-tip)
                      :severity :error}
 
-                    (money/greater-than average-priority-fee
-                                        (:value-number maxPriorityFeePerGas))
-                    {:label (i18n/label :t/lower-than-average-tip)
-                     :severity :error})]
+                    #_(money/greater-than average-priority-fee
+                                          (:value-number maxPriorityFeePerGas))
+                    #_{:label (i18n/label :t/lower-than-average-tip)
+                       :severity :error})]
     (if fee-error
       (assoc-in db [:signing/edit-fee :maxPriorityFeePerGas :fee-error] fee-error)
       (update-in db [:signing/edit-fee :maxPriorityFeePerGas] dissoc :fee-error))))
@@ -138,7 +166,7 @@
         max-priority-fee-value (:value-number maxPriorityFeePerGas)
         new-value (money/bignumber value)
         fee-without-tip (money/sub max-fee-value max-priority-fee-value)
-        base-fee (money/wei-> :gwei (money/bignumber latest-base-fee))
+        base-fee (money/wei->gwei (money/bignumber latest-base-fee))
         new-max-fee-value
         (money/to-fixed
          (if (money/greater-than base-fee fee-without-tip)
@@ -179,12 +207,12 @@
   {:events [:signing.ui/open-fee-sheet]}
   [{{:signing/keys [tx] :as db} :db :as cofx} sheet-opts]
   (let [{:keys [gas gasPrice maxFeePerGas maxPriorityFeePerGas]} tx
-        max-fee          (money/to-fixed (money/wei-> :gwei maxFeePerGas))
-        max-priority-fee (money/to-fixed (money/wei-> :gwei maxPriorityFeePerGas))
+        max-fee          (money/to-fixed (money/wei->gwei maxFeePerGas))
+        max-priority-fee (money/to-fixed (money/wei->gwei maxPriorityFeePerGas))
         edit-fee         (reduce (partial apply build-edit)
                                  {}
                                  {:gas                  (money/to-fixed gas)
-                                  :gasPrice             (money/to-fixed (money/wei-> :gwei gasPrice))
+                                  :gasPrice             (money/to-fixed (money/wei->gwei gasPrice))
                                   :maxFeePerGas         max-fee
                                   :maxPriorityFeePerGas max-priority-fee})]
     (fx/merge cofx

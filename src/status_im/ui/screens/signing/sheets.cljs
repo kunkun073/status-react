@@ -176,6 +176,7 @@
                :justify-content :space-between}}
       [quo/button
        {:type     :secondary
+        :accessibility-label :see-fee-suggestions
         :on-press #(re-frame/dispatch
                     [:bottom-sheet/show-sheet
                      {:content        (fn []
@@ -245,6 +246,7 @@
        :justify-content   :space-between}
       [quo/button
        {:type :secondary
+        :accessibility-label :set-custom-fee
         :on-press #(re-frame/dispatch
                     [:bottom-sheet/show-sheet
                      {:content        (fn []
@@ -253,12 +255,13 @@
        (i18n/label :t/set-custom-fee)]
       [quo/button
        {:type :primary
+        :accessibility-label :save-custom-fee
         :theme :accent
         :on-press #(re-frame/dispatch [:signing.edit-fee.ui/submit])}
        (i18n/label :t/save)]]]))
 
 (defn gwei [val]
-  (str val " " (i18n/label :t/gwei)))
+  (str (money/to-fixed val 2) " " (i18n/label :t/gwei)))
 
 (defn fees-warning []
   (let [base-fee     @(re-frame/subscribe [:wallet/latest-base-fee])
@@ -267,7 +270,8 @@
         priority-fee-gwei (money/wei-> :gwei (money/bignumber priority-fee))
         {priority-fee-edit :maxPriorityFeePerGas
          fee-edit          :maxFeePerGas}
-        @(re-frame/subscribe [:signing/edit-fee])]
+        @(re-frame/subscribe [:signing/edit-fee])
+        suggested-priority-fee (money/div priority-fee-gwei 2)]
     [react/view
      [react/view {:margin-top        24
                   :margin-horizontal 24
@@ -293,19 +297,21 @@
                :justify-content   :space-between
                :margin-horizontal 32}}
       [react/text (i18n/label :t/current-base-fee)]
-      [react/text (gwei (money/to-fixed base-fee-gwei 2))]]
+      [react/text (gwei base-fee-gwei)]]
      [react/view
       {:style {:flex-direction    :row
                :justify-content   :space-between
                :margin-horizontal 32}}
       [react/text (i18n/label :t/current-minimum-tip)]
-      [react/text (gwei gas/minimum-priority-fee)]]
-     [react/view
-      {:style {:flex-direction    :row
-               :justify-content   :space-between
-               :margin-horizontal 32}}
-      [react/text (i18n/label :t/current-average-tip)]
-      [react/text (gwei (money/to-fixed priority-fee-gwei 2))]]
+      [react/text (gwei (gas/get-minimum-priority-fee priority-fee))]]
+     ;;TODO(rasom): we can uncomment it once it will be clear which value can be
+     ;;used as "average" here
+     #_[react/view
+        {:style {:flex-direction    :row
+                 :justify-content   :space-between
+                 :margin-horizontal 32}}
+        [react/text (i18n/label :t/current-average-tip)]
+        [react/text (gwei (money/to-fixed priority-fee-gwei 2))]]
      [react/view {:margin-vertical  16
                   :height           1
                   :background-color colors/gray-lighter}]
@@ -317,7 +323,7 @@
       [react/text {:style {:color (quo-colors/get-color :negative-01)}}
        (i18n/label :t/your-tip-limit)]
       [react/text {:style {:color (quo-colors/get-color :negative-01)}}
-       (gwei (money/to-fixed (:value-number priority-fee-edit) 2))]]
+       (gwei (:value-number priority-fee-edit))]]
      [react/view
       {:style {:flex-direction    :row
                :justify-content   :space-between
@@ -325,7 +331,7 @@
       [react/text {:style {:color (quo-colors/get-color :negative-01)}}
        (i18n/label :t/your-price-limit)]
       [react/text {:style {:color (quo-colors/get-color :negative-01)}}
-       (gwei (money/to-fixed (:value-number fee-edit) 2))]]
+       (gwei (:value-number fee-edit))]]
      [react/view {:style
                   {:background-color   colors/gray-lighter
                    :padding-horizontal 32
@@ -335,12 +341,12 @@
        {:style {:flex-direction  :row
                 :justify-content :space-between}}
        [react/text (i18n/label :t/suggested-min-tip)]
-       [react/text (gwei gas/minimum-priority-fee)]]
+       [react/text (gwei (gas/get-minimum-priority-fee suggested-priority-fee))]]
       [react/view
        {:style {:flex-direction  :row
                 :justify-content :space-between}}
        [react/text (i18n/label :t/suggested-price-limit)]
-       [react/text (gwei (money/to-fixed (money/add base-fee-gwei priority-fee-gwei) 2))]]]
+       [react/text (gwei (money/add base-fee-gwei suggested-priority-fee))]]]
      [react/view
       {:style {:align-items     :center
                :justify-content :center

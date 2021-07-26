@@ -28,6 +28,7 @@
             [status-im.async-storage.core :as async-storage]
             [status-im.popover.core :as popover.core]
             [status-im.signing.eip1559 :as eip1559]
+            [status-im.signing.gas :as signing.gas]
             [clojure.set :as clojure.set]))
 
 (defn get-balance
@@ -383,11 +384,15 @@
   [{db :db} price]
   (if (eip1559/sync-enabled?)
     (let [{:keys [base-fee max-priority-fee]} price
-          max-priority-fee-bn (money/bignumber max-priority-fee)]
+          max-priority-fee-bn (money/with-precision
+                               (signing.gas/get-suggested-tip max-priority-fee)
+                                0)]
       {:db (-> db
                (update :wallet/prepare-transaction assoc
-                       :maxFeePerGas (money/to-hex (money/add max-priority-fee-bn base-fee))
-                       :maxPriorityFeePerGas max-priority-fee)
+                       :maxFeePerGas (money/to-hex (money/add max-priority-fee-bn
+                                                              (money/mul
+                                                               (money/bignumber base-fee) 1.126)))
+                       :maxPriorityFeePerGas (money/to-hex max-priority-fee-bn))
                (assoc :wallet/latest-base-fee base-fee
                       :wallet/latest-priority-fee max-priority-fee))})
     {:db (assoc-in db [:wallet/prepare-transaction :gasPrice] price)}))

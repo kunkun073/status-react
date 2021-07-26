@@ -2566,12 +2566,10 @@
  :signing/priority-fee-suggestions-range
  :<- [:wallet/latest-priority-fee]
  (fn [latest-fee]
-   [0 (->> latest-fee
-           money/bignumber
-           (money/wei-> :gwei)
-           (money/mul (money/bignumber 2))
-           money/to-fixed
-           js/parseFloat)]))
+   (let [[min-tip max-tip]
+         (signing.gas/get-suggestions-range latest-fee)]
+     [(js/parseFloat (money/to-fixed min-tip))
+      (js/parseFloat (money/to-fixed max-tip))])))
 
 (re-frame/reg-sub
  :signing/phrase

@@ -103,9 +103,11 @@
                                   (when gasPrice
                                     {:gasPrice (str "0x" (abi-spec/number-to-hex gasPrice))})
                                   (when maxPriorityFeePerGas
-                                    {:maxPriorityFeePerGas (str "0x" (abi-spec/number-to-hex (.decimalPlaces maxPriorityFeePerGas 0)))})
+                                    {:maxPriorityFeePerGas (str "0x" (abi-spec/number-to-hex
+                                                                      (js/parseInt maxPriorityFeePerGas)))})
                                   (when maxFeePerGas
-                                    {:maxFeePerGas (str "0x" (abi-spec/number-to-hex (.decimalPlaces maxFeePerGas 0)))}))]
+                                    {:maxFeePerGas (str "0x" (abi-spec/number-to-hex
+                                                              (js/parseInt maxFeePerGas)))}))]
         (when-not in-progress?
           {:db                          (update db :signing/sign assoc :error nil :in-progress? true)
            :signing/send-transaction-fx {:tx-obj   tx-obj-to-send
