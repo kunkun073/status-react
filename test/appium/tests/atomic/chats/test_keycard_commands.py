@@ -5,7 +5,7 @@ from tests.users import transaction_senders, transaction_recipients, ens_user_ro
 from tests.base_test_case import MultipleDeviceTestCase, SingleDeviceTestCase
 from views.sign_in_view import SignInView
 
-@marks.transaction
+#@marks.transaction
 class TestCommandsMultipleDevices(MultipleDeviceTestCase):
 
     @marks.testrail_id(6293)
@@ -156,7 +156,7 @@ class TestCommandsMultipleDevices(MultipleDeviceTestCase):
         self.errors.verify_no_errors()
 
 
-@marks.transaction
+#@marks.transaction
 class TestCommandsSingleDevices(SingleDeviceTestCase):
 
     @marks.testrail_id(6295)

@@ -9,7 +9,7 @@ from views.send_transaction_view import SendTransactionView
 from views.sign_in_view import SignInView
 
 
-@marks.transaction
+#@marks.transaction
 class TestTransactionWalletSingleDevice(SingleDeviceTestCase):
 
     @marks.testrail_id(5308)

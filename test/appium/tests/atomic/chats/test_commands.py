@@ -6,7 +6,7 @@ from tests.base_test_case import MultipleDeviceTestCase, SingleDeviceTestCase
 from views.sign_in_view import SignInView
 
 
-@marks.transaction
+#@marks.transaction
 class TestCommandsMultipleDevices(MultipleDeviceTestCase):
     @marks.testrail_id(6253)
     @marks.critical
@@ -262,7 +262,7 @@ class TestCommandsMultipleDevices(MultipleDeviceTestCase):
             self.errors.append("Transaction is shown as confirmed on mainnet, but was sent on ropsten!")
         self.errors.verify_no_errors()
 
-@marks.transaction
+#@marks.transaction
 class TestCommandsSingleDevices(SingleDeviceTestCase):
 
     @marks.testrail_id(6279)
