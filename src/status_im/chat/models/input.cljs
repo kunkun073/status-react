@@ -6,6 +6,7 @@
             [status-im.chat.constants :as chat.constants]
             [status-im.ethereum.json-rpc :as json-rpc]
             [status-im.chat.models :as chat]
+            [status-im.utils.debounce :as debounce]
             [status-im.chat.models.message :as chat.message]
             [status-im.chat.models.message-content :as message-content]
             [status-im.constants :as constants]
@@ -134,23 +135,6 @@
              (update-in [:chat/inputs current-chat-id :metadata]
                         dissoc :sending-image))}))
 
-(fx/defn soft-delete-message-success
-  {:events [::soft-delete-message-success]}
-  [{:keys [db]} chat-id message-id]
-  (let [new-last-message (-> db
-                             :messages
-                             (get chat-id)
-                             vals
-                             (->> (sort-by :whisper-timestamp)
-                                  (filter #(and (not (:hidden-in-ui? %))
-                                                ;; explicitly filter the message being deleted because
-                                                ;; it will not have the :hidden-in-ui? key yet
-                                                (not (= message-id (:message-id %))))))
-                             last)]
-    {:db (-> db
-             (assoc-in [:messages chat-id message-id :hidden-in-ui?] true)
-             (assoc-in [:chats chat-id :last-message] new-last-message))}))
-
 (fx/defn soft-delete-message
   "Does't delete from db, this is a soft delete"
   {:events [:chat.ui/soft-delete-message]}
@@ -159,7 +143,7 @@
                      :params      [message-id]
                      :js-response true
                      :on-error    #(log/error "failed to delete message message " %)
-                     :on-success  #(re-frame/dispatch [::soft-delete-message-success chat-id message-id])}]})
+                     :on-success  #(re-frame/dispatch [::chat.message/handle-removed-messages [message-id]])}]})
 
 (fx/defn cancel-message-reply
   "Cancels stage message reply"

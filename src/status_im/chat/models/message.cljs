@@ -32,8 +32,6 @@
   "Hide chat message, rebuild message-list"
   [{:keys [db]} chat-id message-id]
   ;; TODO this is too expensive, probably we could mark message somehow and just hide it in the UI
-  ;; UPDATE <shivekkhurana> - I have implemented a UI only delete at
-  ;; chat.models.input/soft-delete-message-success
   (message-list/rebuild-message-list {:db (update-in db [:messages chat-id] dissoc message-id)} chat-id))
 
 (fx/defn add-senders-to-chat-users
@@ -196,3 +194,46 @@
 (fx/defn send-messages
   [cofx messages]
   (protocol/send-chat-messages cofx messages))
+
+(defn flip-args [f]
+  (fn [x y] (f y x)))
+
+(defn message-ids->message-id-chat-id-map
+  "Determine the chat ids of a seq of message-ids"
+  [db message-ids]
+  (->> db
+       :messages
+       seq
+       (map second)
+       (into {})
+       ((flip-args select-keys) message-ids)
+       vals
+       (map #(select-keys % [:chat-id :message-id]))))
+
+(fx/defn handle-removed-messages
+  {:events [::handle-removed-messages]}
+  [{:keys [db]} removed-messages]
+  (let [mcids (message-ids->message-id-chat-id-map db removed-messages)]
+    {:db (reduce (fn [acc current]
+                   (update-in acc [:messages (:chat-id current)] dissoc (:message-id current)))
+                 db mcids)}))
+
+(comment
+  (handle-removed-messages
+   {:db {:messages {:c1 {:m1 {:chat-id :c1 :message-id :m1}
+                         :m2 {:chat-id :c1 :message-id :m2}}
+                    :c2 {:m3 {:chat-id :c2 :message-id :m3}
+                         :m4 {:chat-id :c2 :message-id :m4}}}}}
+   [:m1 :m3])
+
+  (as-> re-frame.db/app-db $
+    (deref $)
+    (:messages $)
+    (seq $)
+    (map second $)
+    (into {} $)
+    (select-keys $ ["0x6214e4b09359d6fa73f0fcc302b1089be603676a1fd1a5a147f8d885e42ab0f6" "0x2c265ceb3e9733c4303f4bc27d185bfd8c3f628bdf3b2168ff7749499021c5ec"])
+    (vals $)
+    (map #(select-keys % [:chat-id :message-id]) $)
+    )
+  )
