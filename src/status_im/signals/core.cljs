@@ -52,7 +52,6 @@
   (let [^js data (.parse js/JSON event-str)
         ^js event-js (.-event data)
         type (.-type data)]
-    (prn :---process-> type)
     (case type
       "node.login"         (status-node-started cofx (js->clj event-js :keywordize-keys true))
       "envelope.sent"      (transport.message/update-envelopes-status cofx (:ids (js->clj event-js :keywordize-keys true)) :sent)

@@ -6,7 +6,6 @@
             [status-im.chat.constants :as chat.constants]
             [status-im.ethereum.json-rpc :as json-rpc]
             [status-im.chat.models :as chat]
-            [status-im.utils.debounce :as debounce]
             [status-im.chat.models.message :as chat.message]
             [status-im.chat.models.message-content :as message-content]
             [status-im.constants :as constants]

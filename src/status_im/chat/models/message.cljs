@@ -202,13 +202,13 @@
   "Determine the chat ids of a seq of message-ids"
   [db message-ids]
   (->> db
-       :messages
-       seq
-       (map second)
-       (into {})
-       ((flip-args select-keys) message-ids)
-       vals
-       (map #(select-keys % [:chat-id :message-id]))))
+       :messages ; get messages map
+       seq ; convert it to seq
+       (map second) ; get values of messages map -> message-id : message-obj
+       (into {}) ; convert message-id : message-obj seq to map
+       ((flip-args select-keys) message-ids) ; select the message objects of the ids in question
+       vals ; keep only the values of required messages
+       (map #(select-keys % [:chat-id :message-id])))) ; return the chat-id and message-id of required messages
 
 (fx/defn handle-removed-messages
   {:events [::handle-removed-messages]}
@@ -224,16 +224,4 @@
                          :m2 {:chat-id :c1 :message-id :m2}}
                     :c2 {:m3 {:chat-id :c2 :message-id :m3}
                          :m4 {:chat-id :c2 :message-id :m4}}}}}
-   [:m1 :m3])
-
-  (as-> re-frame.db/app-db $
-    (deref $)
-    (:messages $)
-    (seq $)
-    (map second $)
-    (into {} $)
-    (select-keys $ ["0x6214e4b09359d6fa73f0fcc302b1089be603676a1fd1a5a147f8d885e42ab0f6" "0x2c265ceb3e9733c4303f4bc27d185bfd8c3f628bdf3b2168ff7749499021c5ec"])
-    (vals $)
-    (map #(select-keys % [:chat-id :message-id]) $)
-    )
-  )
+   [:m1 :m3]))
