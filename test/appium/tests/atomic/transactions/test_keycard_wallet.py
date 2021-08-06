@@ -5,11 +5,11 @@ from tests.users import transaction_senders, basic_user, wallet_users
 from views.sign_in_view import SignInView
 
 
-#@marks.transaction
 class TestTransactionWalletSingleDevice(SingleDeviceTestCase):
 
     @marks.testrail_id(6289)
     @marks.critical
+    @marks.transaction
     def test_keycard_send_eth_from_wallet_to_address(self):
         recipient = basic_user
         sender = transaction_senders['P']
@@ -33,6 +33,7 @@ class TestTransactionWalletSingleDevice(SingleDeviceTestCase):
     @marks.testrail_id(6290)
     @marks.high
     @marks.flaky
+    @marks.transaction
     def test_keycard_fetching_balance_after_offline(self):
         sender = transaction_senders['F']
         sign_in = SignInView(self.driver)
@@ -67,6 +68,7 @@ class TestTransactionWalletSingleDevice(SingleDeviceTestCase):
 
     @marks.testrail_id(6291)
     @marks.critical
+    @marks.transaction
     def test_keycard_can_see_all_transactions_in_history(self):
         address = wallet_users['D']['address']
         passphrase = wallet_users['D']['passphrase']

@@ -9,11 +9,11 @@ from views.send_transaction_view import SendTransactionView
 from views.sign_in_view import SignInView
 
 
-#@marks.transaction
 class TestTransactionWalletSingleDevice(SingleDeviceTestCase):
 
     @marks.testrail_id(5308)
     @marks.critical
+    @marks.transaction
     def test_send_eth_from_wallet_to_address_incorrect_password(self):
         recipient = basic_user
         sender = transaction_senders['P']
@@ -54,6 +54,7 @@ class TestTransactionWalletSingleDevice(SingleDeviceTestCase):
     @marks.testrail_id(6237)
     @marks.high
     @marks.flaky
+    @marks.transaction
     def test_fetching_balance_after_offline(self):
         sender = wallet_users['E']
         sign_in = SignInView(self.driver)
@@ -91,6 +92,7 @@ class TestTransactionWalletSingleDevice(SingleDeviceTestCase):
 
     @marks.testrail_id(5461)
     @marks.medium
+    @marks.transaction
     def test_send_eth_from_wallet_incorrect_address(self):
         recipient = basic_user
         sender = wallet_users['B']
@@ -114,6 +116,7 @@ class TestTransactionWalletSingleDevice(SingleDeviceTestCase):
 
     @marks.testrail_id(5350)
     @marks.critical
+    @marks.transaction
     def test_send_token_with_7_decimals(self):
         sender = transaction_senders['S']
         recipient = basic_user
@@ -133,6 +136,7 @@ class TestTransactionWalletSingleDevice(SingleDeviceTestCase):
 
     @marks.testrail_id(5412)
     @marks.high
+    @marks.transaction
     def test_insufficient_funds_wallet_positive_balance(self):
         sender = wallet_users['E']
         sign_in_view = SignInView(self.driver)
@@ -164,6 +168,7 @@ class TestTransactionWalletSingleDevice(SingleDeviceTestCase):
 
     @marks.testrail_id(5314)
     @marks.critical
+    @marks.transaction
     def test_can_see_balance_and_all_transactions_history_on_cellular(self):
         address = wallet_users['D']['address']
         passphrase = wallet_users['D']['passphrase']
@@ -206,6 +211,7 @@ class TestTransactionWalletSingleDevice(SingleDeviceTestCase):
 
     @marks.testrail_id(5429)
     @marks.medium
+    @marks.transaction
     def test_set_currency(self):
         sign_in_view = SignInView(self.driver)
         user_currency = 'Euro (EUR)'
@@ -217,6 +223,7 @@ class TestTransactionWalletSingleDevice(SingleDeviceTestCase):
 
     @marks.testrail_id(5407)
     @marks.medium
+    @marks.transaction
     def test_offline_can_login_cant_send_transaction(self):
         home = SignInView(self.driver).create_user()
         wallet = home.wallet_button.click()
@@ -305,6 +312,7 @@ class TestTransactionWalletSingleDevice(SingleDeviceTestCase):
 
     @marks.testrail_id(6235)
     @marks.medium
+    @marks.transaction
     def test_can_change_account_settings(self):
         sign_in_view = SignInView(self.driver)
         sign_in_view.create_user()
@@ -338,6 +346,7 @@ class TestTransactionWalletSingleDevice(SingleDeviceTestCase):
 
     @marks.testrail_id(6282)
     @marks.medium
+    @marks.transaction
     def test_can_scan_eip_681_links(self):
         sign_in_view = SignInView(self.driver)
         sign_in_view.recover_access(transaction_senders['C']['passphrase'])
@@ -451,6 +460,7 @@ class TestTransactionWalletSingleDevice(SingleDeviceTestCase):
 
     @marks.testrail_id(6208)
     @marks.high
+    @marks.transaction
     def test_send_transaction_with_custom_token(self):
         contract_address = '0x101848D5C5bBca18E6b4431eEdF6B95E9ADF82FA'
         name = 'Weenus 💪'
@@ -697,6 +707,7 @@ class TestTransactionWalletMultipleDevice(MultipleDeviceTestCase):
 
     @marks.testrail_id(6330)
     @marks.medium
+    @marks.transaction
     def test_can_send_all_tokens_via_max_option(self):
         sender = transaction_senders['V']
         receiver = transaction_recipients['K']
