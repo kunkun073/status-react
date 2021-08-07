@@ -63,20 +63,12 @@
         edit-max-fee)))
 
 (def minimum-priority-fee-gwei
-  (money/bignumber 2))
-
-(defn get-minimum-priority-fee [suggested-tip]
-  (let [suggested-tip-gwei (->> suggested-tip
-                                money/bignumber
-                                money/wei->gwei)]
-    (if (money/greater-than minimum-priority-fee-gwei suggested-tip-gwei)
-      (money/div suggested-tip-gwei 2)
-      minimum-priority-fee-gwei)))
+  (money/bignumber 0.3))
 
 (defn get-suggested-tip [latest-priority-fee]
   (money/div (money/bignumber latest-priority-fee) 2))
 
-(defn get-minimum-priority-fee-gwei [latest-priority-fee]
+(defn get-minimum-priority-fee [latest-priority-fee]
   (let [latest-priority-fee-bn (money/bignumber latest-priority-fee)
         suggested-tip-gwei (money/wei->gwei (get-suggested-tip latest-priority-fee-bn))]
     (if (money/greater-than minimum-priority-fee-gwei suggested-tip-gwei)
@@ -84,7 +76,7 @@
       minimum-priority-fee-gwei)))
 
 (defn get-suggestions-range [latest-priority-fee]
-  (let [current-minimum-fee (get-minimum-priority-fee-gwei latest-priority-fee)]
+  (let [current-minimum-fee (get-minimum-priority-fee latest-priority-fee)]
     [(if (money/greater-than minimum-priority-fee-gwei current-minimum-fee)
        current-minimum-fee
        minimum-priority-fee-gwei)
