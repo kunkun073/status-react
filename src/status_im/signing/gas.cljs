@@ -179,9 +179,22 @@
 (fx/defn update-gas-price-success
   {:events [:signing/update-gas-price-success]}
   [{db :db} price]
-  {:db (-> db
-           (assoc-in [:signing/tx :gasPrice] price)
-           (assoc-in [:signing/edit-fee :gas-price-loading?] false))})
+  (if (eip1559/sync-enabled?)
+    (let [{:keys [base-fee max-priority-fee]} price
+          max-priority-fee-bn (money/with-precision
+                               (get-suggested-tip max-priority-fee)
+                                0)]
+      {:db (-> db
+               (assoc-in [:signing/tx :maxFeePerGas]
+                         (money/to-hex (money/add max-priority-fee-bn
+                                                  (money/mul-and-round
+                                                   (money/bignumber base-fee) 1.126))))
+               (assoc-in [:signing/tx :maxPriorityFeePerGas]
+                         (money/to-hex max-priority-fee-bn))
+               (assoc-in [:signing/edit-fee :gas-price-loading?] false))})
+    {:db (-> db
+             (assoc-in [:signing/tx :gasPrice] price)
+             (assoc-in [:signing/edit-fee :gas-price-loading?] false))}))
 
 (fx/defn update-estimated-gas-error
   {:events [:signing/update-estimated-gas-error]}
