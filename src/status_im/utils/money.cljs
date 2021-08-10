@@ -179,5 +179,11 @@
 (defn mul [bn1 bn2]
   (.mul ^js bn1 bn2))
 
+(defn mul-and-round [bn1 bn2]
+  (.round (.mul ^js bn1 bn2) 0))
+
 (defn div [bn1 bn2]
   (.dividedBy ^js bn1 bn2))
+
+(defn div-and-round [bn1 bn2]
+  (.round (.dividedBy ^js bn1 bn2) 0))

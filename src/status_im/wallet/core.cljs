@@ -390,7 +390,7 @@
       {:db (-> db
                (update :wallet/prepare-transaction assoc
                        :maxFeePerGas (money/to-hex (money/add max-priority-fee-bn
-                                                              (money/mul
+                                                              (money/mul-and-round
                                                                (money/bignumber base-fee) 1.126)))
                        :maxPriorityFeePerGas (money/to-hex max-priority-fee-bn))
                (assoc :wallet/latest-base-fee base-fee

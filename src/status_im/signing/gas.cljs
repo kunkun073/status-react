@@ -66,7 +66,7 @@
   (money/bignumber 0.3))
 
 (defn get-suggested-tip [latest-priority-fee]
-  (money/div (money/bignumber latest-priority-fee) 2))
+  (money/div-and-round (money/bignumber latest-priority-fee) 2))
 
 (defn get-minimum-priority-fee [latest-priority-fee]
   (let [latest-priority-fee-bn (money/bignumber latest-priority-fee)
