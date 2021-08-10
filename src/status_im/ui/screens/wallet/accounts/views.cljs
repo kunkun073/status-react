@@ -107,7 +107,7 @@
      [dot {:selected (= selected i)}])])
 
 (views/defview accounts []
-  (views/letsubs [accounts [:multiaccount/accounts]
+  (views/letsubs [accounts [:multiaccount/visible-accounts]
                   keycard? [:keycard-multiaccount?]
                   window-width [:dimensions/window-width]
                   index (reagent/atom 0)]
