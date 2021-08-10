@@ -18,7 +18,7 @@
                    :disabled            @in-progress?
                    :loading             @in-progress?
                    :accessibility-label :block-contact-confirm
-                   :on-press            #(do (reset! in-progress? true)
+                   :on-press            #(do (true)
                                              (re-frame/dispatch [:contact.ui/block-contact-confirmed public-key]))}
        (i18n/label :t/block)]
       [react/view {:height 8}]
