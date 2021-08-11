@@ -46,7 +46,7 @@
                     (assoc :last-updated now)
                     (update :system-tags (fnil conj #{}) :contact/blocked))
         from-one-to-one-chat? (not (get-in db [:chats (:current-chat-id db) :group-chat]))]
-    (contacts-store/block contact #())))
+    (contacts-store/block cofx contact #())))
 
 (fx/defn unblock-contact
   {:events [:contact.ui/unblock-contact-pressed]}
