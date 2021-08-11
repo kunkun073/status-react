@@ -46,20 +46,7 @@
                     (assoc :last-updated now)
                     (update :system-tags (fnil conj #{}) :contact/blocked))
         from-one-to-one-chat? (not (get-in db [:chats (:current-chat-id db) :group-chat]))]
-    (fx/merge cofx
-              {:db (-> db
-                       ;; add the contact to blocked contacts
-                       (update :contacts/blocked (fnil conj #{}) public-key)
-                       ;; update the contact in contacts list
-                       (assoc-in [:contacts/contacts public-key] contact)
-                       ;; remove the 1-1 chat if it exists
-                       (update-in [:chats] dissoc public-key))}
-              (contacts-store/block contact #(do (re-frame/dispatch [::contact-blocked contact (map chats-store/<-rpc %)])
-                                                 (re-frame/dispatch [:hide-popover])))
-              ;; reset navigation to avoid going back to non existing one to one chat
-              (if from-one-to-one-chat?
-                (navigation/pop-to-root-tab :chat-stack)
-                (navigation/navigate-back)))))
+    (contacts-store/block contact #())))
 
 (fx/defn unblock-contact
   {:events [:contact.ui/unblock-contact-pressed]}
