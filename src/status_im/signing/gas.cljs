@@ -62,11 +62,13 @@
         (assoc key data)
         edit-max-fee)))
 
+;; TODO(rasom): this number is almost arbitrary, I was able to sent txs with
+;; 0.2 gwei tip, so it should be revisited lately
 (def minimum-priority-fee-gwei
   (money/bignumber 0.3))
 
 (defn get-suggested-tip [latest-priority-fee]
-  (money/div-and-round (money/bignumber latest-priority-fee) 2))
+  (money/bignumber latest-priority-fee))
 
 (defn get-minimum-priority-fee [latest-priority-fee]
   (let [latest-priority-fee-bn (money/bignumber latest-priority-fee)
@@ -187,8 +189,7 @@
       {:db (-> db
                (assoc-in [:signing/tx :maxFeePerGas]
                          (money/to-hex (money/add max-priority-fee-bn
-                                                  (money/mul-and-round
-                                                   (money/bignumber base-fee) 1.126))))
+                                                  (money/bignumber base-fee))))
                (assoc-in [:signing/tx :maxPriorityFeePerGas]
                          (money/to-hex max-priority-fee-bn))
                (assoc-in [:signing/edit-fee :gas-price-loading?] false))})
@@ -253,7 +254,7 @@
     (fn []
       (json-rpc/call
        {:method     "eth_getBlockByNumber"
-        :params     ["latest" false]
+        :params     ["pending" false]
         :on-success #(re-frame/dispatch [::header-fetched
                                          (assoc params :header %)])
         :on-error   #(re-frame/dispatch [error-event %])}))
@@ -276,22 +277,15 @@
 
 (def london-block-gas-limit (money/bignumber 30000000))
 
-(defn check-base-fee [{:keys [gasUsed baseFeePerGas]}]
-  {:base-fee baseFeePerGas
-   :spike?   (or (money/greater-than-or-equals
-                  (money/bignumber 0)
-                  (money/bignumber gasUsed))
-                 (money/greater-than-or-equals
-                  (money/bignumber gasUsed)
-                  (money/bignumber london-block-gas-limit)))})
+(defn check-base-fee [{:keys [baseFeePerGas]}]
+  {:base-fee baseFeePerGas})
 
 (fx/defn max-priority-fee-per-gas-fetched
   {:events [::max-priority-fee-per-gas-fetched]}
   [_ {:keys [success-event header max-priority-fee]}]
-  (let [{:keys [base-fee spike?]} (check-base-fee header)]
+  (let [{:keys [base-fee]} (check-base-fee header)]
     {:dispatch [success-event {:base-fee         base-fee
-                               :max-priority-fee max-priority-fee
-                               :spike?           spike?}]}))
+                               :max-priority-fee max-priority-fee}]}))
 
 (re-frame/reg-fx
  :signing/update-estimated-gas
